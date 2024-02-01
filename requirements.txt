@@ -2,4 +2,6 @@ torch
 numpy
 matplotlib
 pillow
-
+splitfolders
+albumentations
+tqdm
