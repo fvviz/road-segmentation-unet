@@ -4,4 +4,4 @@
 
 Input Image             |  Road mask
 :-------------------------:|:-------------------------:
-![](https://i.imgur.com/H8Jjrde.jpeg)  |  ![](https://imgur.com/8KoWbce.jpeg)
+![](https://i.imgur.com/vEhYazL.jpeg)  |  ![](https://i.imgur.com/uncyhbR.png)
