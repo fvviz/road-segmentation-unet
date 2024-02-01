@@ -1,39 +1,42 @@
 import torchvision
 import torch
+import numpy as np
 from PIL import Image
 
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
-
 from model import UNET
+from utils import load_checkpoint
 import argparse
 
 def process_image(image_path, target_size= (256, 256)):
-    val_transforms = A.Compose(
-        [
-            A.Resize(height=256, width=256),
-            A.Normalize(
-                mean=[0.0, 0.0, 0.0],
-                std=[1.0, 1.0, 1.0],
-                max_pixel_value=255.0,
-            ),
-            ToTensorV2(),
-        ],
-    )
+    resize_transform = torchvision.transforms.Compose([
+        torchvision.transforms.Resize(target_size),
+        torchvision.transforms.ToTensor(),
+        torchvision.transforms.Normalize(
+        mean=[0.0, 0.0, 0.0],
+        std=[1.0, 1.0, 1.0],
+        )
+        ])
+    
     uneven_image = Image.open(image_path)
-    even_image = val_transforms(uneven_image)
+    uneven_image = uneven_image.convert("RGB")
+    even_image = resize_transform(uneven_image)
     return even_image
 
-def create_mask(image_path, out_mask_path, device='cpu'):
+def create_mask(image_path, out_mask_path, device='cpu', checkpoint_path = 'checkpoints/best_checkpoint.pth.tar'):
     img_tensor = process_image(image_path)
-    img_tensor.to(device)
+    img_tensor = img_tensor.unsqueeze(0)
 
-    model = UNET().to(device)
+    model = UNET()
+    if device!= 'gpu':
+        checkpoint = torch.load(checkpoint_path, map_location=device)
+        model.load_state_dict(checkpoint['state_dict'])
+    else:
+        checkpoint = torch.load(checkpoint_path)
+        model.load_state_dict(checkpoint['state_dict'])
 
     model.eval()
     with torch.no_grad():
-        mask_raw = model.predict(img_tensor)
-        mask = torch.sigmoid(mask_raw)
+        mask = torch.sigmoid(model(img_tensor))
         mask = (mask>0.5).float()
         torchvision.utils.save_image(mask, out_mask_path)
     model.train()
