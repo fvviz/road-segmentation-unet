@@ -48,7 +48,7 @@ def organise_data(input_dir = 'road-detection/train', split_ratio =(.8, 0.1,0.1)
 def train_fn(loader, model, optimizer, loss_fn, scaler):
     loop = tqdm(loader)
 
-    for batch_idx, (data, targets) in enumerate(loop):
+    for i, (data, targets) in enumerate(loop):
         data = data.to(device='cuda')
         targets = targets.float().unsqueeze(1).to(device='cuda')
 
